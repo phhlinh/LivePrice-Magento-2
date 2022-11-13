@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="liveprice" translate="label" sortOrder="500" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Live Price</label>
+            <tab>catalog</tab>
+            <resource>PL_Liveprice::system_config</resource>
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Live Price</label>
+                <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="product_level" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Use Product Settings</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Set to Yes then use settings of individual product</comment>
+                </field>
+                <field id="time_step" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Time Step</label>
+                </field>
+                <field id="price_step" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Price Step</label>
+                </field>
+                <field id="update_main_price" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Update Main Price By Minute</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Update main price by each minute</comment>
+                </field>
+                <field id="display_countdown_timer" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Display Countdown Timer</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+
+                </field>
+                <field id="tooltip_timer" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Tooltip Timer</label>
+                </field>
+            </group>
+            <group id="color" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Color Settings</label>
+                <field id="timer" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Timer</label>
+                    <validate>color</validate>
+                </field>
+                <field id="end_price" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>End Price</label>
+                    <validate>color</validate>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

@@ -1,0 +1,284 @@
+<?php
+/**
+ * PL Development.
+ *
+ * @category    PL
+ * @author      Linh Pham <plinh5@gmail.com>
+ * @copyright   Copyright (c) 2016 PL Development. (http://www.polacin.com)
+ */
+
+/** @var \Magento\Catalog\Pricing\Render\FinalPriceBox $block */
+
+$productId = $block->getSaleableItem()->getId();
+
+/** @var \Magento\Catalog\Pricing\Price\RegularPrice $priceModel */
+$priceModel = $block->getPriceType('regular_price');
+
+/** @var \Magento\Catalog\Pricing\Price\FinalPrice $finalPriceModel */
+$finalPriceModel = $block->getPriceType('final_price');
+$idSuffix = $block->getIdSuffix() ? $block->getIdSuffix() : '';
+$schema = ($block->getZone() == 'item_view') ? true : false;
+
+$_helper = $this->helper('\PL\Liveprice\Helper\Data');
+$liveprice =  $_helper->calPrice($productId);
+
+?>
+
+<!-- Product List --->
+<?php if($block->getZone() == 'item_list'): ?>
+    <?php if ($block->hasSpecialPrice()): ?>
+        <span class="special-price">
+        <?php if($liveprice && $liveprice !=0):?>
+            <?php echo $_helper->getPriceHtml($liveprice,'finalPrice',$block->getPriceId('product-price-' . $idSuffix),__('Special Price')); ?>
+        <?php else:?>
+            <?php echo $block->renderAmount($finalPriceModel->getAmount(), [
+                'display_label'     => __('Special Price'),
+                'price_id'          => $block->getPriceId('product-price-' . $idSuffix),
+                'price_type'        => 'finalPrice',
+                'include_container' => true,
+                'schema' => $schema
+            ]); ?>
+        <?php endif;?>
+
+    </span>
+        <span class="old-price">
+        <?php  echo $block->renderAmount($priceModel->getAmount(), [
+            'display_label'     => __('Regular Price'),
+            'price_id'          => $block->getPriceId('old-price-' . $idSuffix),
+            'price_type'        => 'oldPrice',
+            'include_container' => true,
+            'skip_adjustments'  => true
+        ]); ?>
+    </span>
+    <?php else: ?>
+        <?php if($liveprice && $liveprice !=0):?>
+        <span class="special-price">
+            <?php echo $_helper->getPriceHtml($liveprice,'finalPrice',$block->getPriceId('product-price-' . $idSuffix),__('Special Price')); ?>
+        </span>
+        <span class="old-price">
+            <?php  echo $block->renderAmount($finalPriceModel->getAmount(), [
+                'display_label'     => __('Regular Price'),
+                'price_id'          => $block->getPriceId('product-price-' . $idSuffix),
+                'price_type'        => 'finalPrice',
+                'include_container' => true,
+                'schema' => $schema
+            ]); ?>
+        </span>
+        <?php else:?>
+            <?php  echo $block->renderAmount($finalPriceModel->getAmount(), [
+                'price_id'          => $block->getPriceId('product-price-' . $idSuffix),
+                'price_type'        => 'finalPrice',
+                'include_container' => true,
+                'schema' => $schema
+            ]); ?>
+        <?php endif;?>
+    <?php endif; ?>
+<?php endif;?>
+
+<!-- Product View --->
+<?php if($block->getZone() == 'item_view'): ?>
+    <?php
+    if($liveprice && $liveprice != 0):
+        $productId = $block->getSaleableItem()->getId();
+        $_helper->getProductLevel();
+        $product = $block->getSaleableItem();
+        if($_helper->getProductLevel()):
+            $tooltip_timer = $product->getTooltipTimer();
+        else:
+            $tooltip_timer = $_helper->getTooltipTimer();
+        endif;
+        ?>
+
+        <style>
+            .liveprice-timer #liveprice-days,
+            .liveprice-timer #liveprice-hours,
+            .liveprice-timer #liveprice-minutes,
+            .liveprice-timer #liveprice-seconds{color: <?php echo $_helper->getTimerColor(); ?>;}
+            .liveprice-be-quick{color: <?php echo $_helper->getPriceColor(); ?>;}
+        </style>
+
+
+
+        <div class="liveprice">
+            <div class="liveprice-price"><?php echo $_helper->getPriceSnippet($liveprice,'finalPrice',$block->getPriceId('product-price-' . $idSuffix))?></div>
+            <div class="live-price-wrapper">
+                <?php if($_helper->getDisplayCountDownTimer()):?>
+                    <div class="liveprice-timer">
+                        <div class="one"><label id="liveprice-days">00</label> <span><?php echo __('Days')?></span></div><div class="one"><label id="liveprice-hours">00</label> <span><?php echo __('Hrs')?></span></div><div class="one"><label id="liveprice-minutes">00</label><span><?php echo __('Mins')?></span></div><div class="one"><label id="liveprice-seconds">00</label><span><?php echo __('Secs')?></span></div>
+                    </div>
+                <?php endif;?>
+                <div class="liveprice-count">
+                    <span class="info-icon"><img src="<?php echo $this->getViewFileUrl('PL_Liveprice::images/information.png')?>" width="16" height="16">
+                    <?php if($tooltip_timer!=""):?>
+                        <div class="tip-w">
+                            <div class="live-price-tip-wrapper"><div class="live-price-tip"><?php echo $tooltip_timer?></div></div>
+                        </div>
+                    <?php endif;?>
+                    </span>
+                </div>
+            </div>
+            <div class="liveprice-be-quick"><?php echo __('Be quick or Pay')?> <span><?php echo $block->renderAmount($finalPriceModel->getAmount())?></span></div>
+        </div>
+        <?php
+		//echo $product->getProgressDateStart();
+        $progress_date_start_exp = explode(' ',$product->getProgressDateStart());
+        $progress_date_start = explode("/",$progress_date_start_exp[0]);
+        $progress_date_start_y = $progress_date_start[0];
+        $progress_date_start_m = $progress_date_start[1];
+        $progress_date_start_d = $progress_date_start[2];
+        $strtotime_progress = explode(':',$product->getProgressTimeStart());
+
+        ?>
+
+        <script type="text/javascript">
+            function getTimeDifference(earlierDate,laterDate){
+                var nTotalDiff = laterDate.getTime() - earlierDate.getTime();
+                var oDiff = new Object();
+                oDiff.days = Math.floor(nTotalDiff/1000/60/60/24);
+                nTotalDiff -= oDiff.days*1000*60*60*24;
+                oDiff.hours = Math.floor(nTotalDiff/1000/60/60);
+                nTotalDiff -= oDiff.hours*1000*60*60;
+                oDiff.minutes = Math.floor(nTotalDiff/1000/60);
+                nTotalDiff -= oDiff.minutes*1000*60;
+                oDiff.seconds = Math.floor(nTotalDiff/1000);
+                return oDiff;
+            }
+            function useTimeDifference(){
+                dateWhenIndiaWonFirstCricketWorldCup = new Date(<?php echo $progress_date_start_y ?>, <?php echo $progress_date_start_m -1 ?>, <?php echo $progress_date_start_d ?>, <?php echo $strtotime_progress[0]?>, <?php echo $strtotime_progress[1] ?>, 0);
+                dateCurrent = new Date();
+                oDiff = getTimeDifference(dateWhenIndiaWonFirstCricketWorldCup, dateCurrent);
+                var total = oDiff.days*24*60 + oDiff.hours*60 + oDiff.minutes - 420;
+                return total;
+            }
+            function animateValue(id, progress_price_start, progress_price_end, price) {
+                var current = 0;
+                <?php if($_helper->getUpdateMainPrice()):?>
+                var stepTime = 60000;
+                <?php else:?>
+                <?php if($_helper->getProductLevel()):?>
+                var stepTime = 60000*<?php echo $product->getTimeStep()?>;
+                <?php else:?>
+                var stepTime = 60000*<?php echo $_helper->getTimeStep()?>;
+                <?php endif;?>
+                <?php endif;?>
+
+                var obj = document.getElementById(id);
+                var progress_price = 0;
+                //var progress_time = useTimeDifference();
+                var progress_time = 0;
+                var currentProgressPrice = <?php echo $liveprice?>;
+                var timer = setInterval(function() {
+                    <?php if($_helper->getUpdateMainPrice()):?>
+                    progress_time +=1;
+                    <?php else:?>
+                            <?php if($_helper->getProductLevel()):?>
+                    progress_time +=<?php echo $product->getTimeStep()?>;
+                             <?php else:?>
+                    progress_time +=<?php echo $_helper->getTimeStep(); ?>;
+                            <?php endif;?>
+                    <?php endif;?>
+                    
+                    <?php if($_helper->getProductLevel()):?>
+                    price_rate = (<?php echo  $product->getPriceStep(); ?>)/(<?php echo  $product->getTimeStep(); ?>);
+                    <?php else:?>
+                    price_rate = (<?php echo $_helper->getPriceStep() ?>)/(<?php echo $_helper->getTimeStep(); ?>);
+                    <?php endif;?>
+
+                    progress_price = progress_time*price_rate;
+                    //current = progress_price_start + progress_price;
+                    current = currentProgressPrice + progress_price;
+                    obj.innerHTML ='<span class="price">'+ current.toLocaleString('<?php echo str_replace('_','-',$_helper->getLocaleCode()) ?>', { style: 'currency', currency: '<?php echo $_helper->getBaseCurrencyCode()?>' })+'</span>';
+                    if (current == progress_price_end) {
+                        clearInterval(timer);
+                        obj.innerHTML = '<span class="price">'+price+'</span>';
+                    }
+
+                }, stepTime);
+            }
+            animateValue("<?php echo $block->getPriceId('product-price-' . $idSuffix)?>", <?php echo $product->getProgressPriceStart() ?>, <?php echo $product->getProgressPriceEnd() ?>, <?php echo $product->getPrice() ?>);
+
+            var daysLabel = document.getElementById("liveprice-days");
+            var hoursLabel = document.getElementById("liveprice-hours");
+            var minutesLabel = document.getElementById("liveprice-minutes");
+            var secondsLabel = document.getElementById("liveprice-seconds");
+            <?php if($_helper->getProductLevel()):?>
+            totalSeconds = 60*<?php echo $product->getTimeStep()?>;
+            <?php else:?>
+            var totalSeconds = 60*<?php echo $_helper->getTimeStep()?>;
+            <?php endif;?>
+
+            setInterval(setTime, 1000);
+
+            function setTime()
+            {
+                --totalSeconds;
+                secondsLabel.innerHTML = pad(totalSeconds%60);
+                minutesLabel.innerHTML = pad(parseInt(totalSeconds/60) % 60);
+                hoursLabel.innerHTML = pad(parseInt(totalSeconds/3600));
+                daysLabel.innerHTML = pad(parseInt(totalSeconds/60/60/24));
+                if(totalSeconds == 0){
+                    <?php if($_helper->getProductLevel()):?>
+                    totalSeconds = 60*<?php echo $product->getTimeStep()?>;
+                    <?php else:?>
+                    totalSeconds=60*<?php echo $_helper->getTimeStep()?>;
+                    <?php endif;?>
+
+                }
+            }
+            function pad(val)
+            {
+                var valString = val + "";
+                if(valString.length < 2)
+                {
+                    return "0" + valString;
+                }
+                else
+                {
+                    return valString;
+                }
+            }
+        </script>
+
+     <?php else:?>
+        <?php if ($block->hasSpecialPrice()): ?>
+            <span class="special-price">
+        <?php echo $block->renderAmount($finalPriceModel->getAmount(), [
+            'display_label'     => __('Special Price'),
+            'price_id'          => $block->getPriceId('product-price-' . $idSuffix),
+            'price_type'        => 'finalPrice',
+            'include_container' => true,
+            'schema' => $schema
+        ]); ?>
+    </span>
+            <span class="old-price">
+        <?php  echo $block->renderAmount($priceModel->getAmount(), [
+            'display_label'     => __('Regular Price'),
+            'price_id'          => $block->getPriceId('old-price-' . $idSuffix),
+            'price_type'        => 'oldPrice',
+            'include_container' => true,
+            'skip_adjustments'  => true
+        ]); ?>
+    </span>
+        <?php else: ?>
+            <?php  echo $block->renderAmount($finalPriceModel->getAmount(), [
+                'price_id'          => $block->getPriceId('product-price-' . $idSuffix),
+                'price_type'        => 'finalPrice',
+                'include_container' => true,
+                'schema' => $schema
+            ]); ?>
+        <?php endif; ?>
+    <?php endif;?>
+
+<?php endif;?>
+
+<?php if ($block->showMinimalPrice()): ?>
+    <?php if ($block->getUseLinkForAsLowAs()):?>
+        <a href="<?php /* @escapeNotVerified */ echo $block->getSaleableItem()->getProductUrl(); ?>" class="minimal-price-link">
+            <?php /* @escapeNotVerified */ echo $block->renderAmountMinimal(); ?>
+        </a>
+    <?php else:?>
+        <span class="minimal-price-link">
+            <?php /* @escapeNotVerified */ echo $block->renderAmountMinimal(); ?>
+        </span>
+    <?php endif?>
+<?php endif; ?>

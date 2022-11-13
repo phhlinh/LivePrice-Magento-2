@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <liveprice>
+            <general>
+                <enable>1</enable>
+                <product_level>1</product_level>
+                <time_step>1</time_step>
+                <price_step>0.5</price_step>
+                <update_main_price>1</update_main_price>
+                <display_countdown_timer>1</display_countdown_timer>
+                <tooltip_timer>The price value will increase by timer</tooltip_timer>
+            </general>
+            <color>
+                <timer>#323A45</timer>
+                <end_price>#26B57B</end_price>
+            </color>
+        </liveprice>
+    </default>
+</config>
